@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 import os
 import re
+import sqlite3
 import time
 from typing import Any
 
@@ -15,47 +17,93 @@ import requests
 import streamlit as st
 
 DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+SQLITE_DB_PATH = os.getenv("SQLITE_DB_PATH", "geocode_cache.sqlite")
 NOMINATIM_BASE_URL = os.getenv("NOMINATIM_BASE_URL", "https://nominatim.openstreetmap.org/search").strip()
 GEOCODER_USER_AGENT = os.getenv("GEOCODER_USER_AGENT", "OccuMedAddressGeocoder/1.0").strip()
 GEOCODER_ANALYST = os.getenv("GEOCODER_ANALYST", "").strip()
 NOMINATIM_DELAY_SECONDS = float(os.getenv("NOMINATIM_DELAY_SECONDS", "1.0"))
 
+USING_SQLITE = False
+
 
 def get_conn():
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL is missing in Render environment variables.")
-    conn = psycopg.connect(DATABASE_URL, autocommit=True, row_factory=dict_row)
-    with conn.cursor() as cur:
-        cur.execute("""
+    """Return a DB connection. If DATABASE_URL is set, connect to Postgres (Neon); otherwise use local SQLite.
+
+    The function also ensures the geocode_cache table exists with a compatible schema for either DB.
+    """
+    global USING_SQLITE
+    if DATABASE_URL:
+        conn = psycopg.connect(DATABASE_URL, autocommit=True, row_factory=dict_row)
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS geocode_cache (
+                    id BIGSERIAL PRIMARY KEY,
+                    address_hash TEXT UNIQUE NOT NULL,
+                    raw_address TEXT,
+                    normalized_address TEXT NOT NULL,
+                    country_name TEXT,
+                    country_code TEXT,
+                    latitude DOUBLE PRECISION,
+                    longitude DOUBLE PRECISION,
+                    geocode_status TEXT NOT NULL,
+                    geocode_source TEXT,
+                    geocode_confidence DOUBLE PRECISION,
+                    display_name TEXT,
+                    error TEXT,
+                    provider_response_json JSONB,
+                    usage_count INTEGER NOT NULL DEFAULT 1,
+                    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    last_used_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    created_by TEXT,
+                    manual_override_lat DOUBLE PRECISION,
+                    manual_override_lng DOUBLE PRECISION,
+                    manual_override_reason TEXT,
+                    reviewed_by TEXT,
+                    reviewed_at TIMESTAMPTZ,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                )
+            """)
+            cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_geocode_cache_address_hash_unique ON geocode_cache(address_hash)")
+        USING_SQLITE = False
+        return conn
+
+    # Fallback to SQLite local cache
+    os.makedirs(os.path.dirname(SQLITE_DB_PATH) or '.', exist_ok=True)
+    conn = sqlite3.connect(SQLITE_DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    with conn:
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS geocode_cache (
-                id BIGSERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 address_hash TEXT UNIQUE NOT NULL,
                 raw_address TEXT,
                 normalized_address TEXT NOT NULL,
                 country_name TEXT,
                 country_code TEXT,
-                latitude DOUBLE PRECISION,
-                longitude DOUBLE PRECISION,
+                latitude REAL,
+                longitude REAL,
                 geocode_status TEXT NOT NULL,
                 geocode_source TEXT,
-                geocode_confidence DOUBLE PRECISION,
+                geocode_confidence REAL,
                 display_name TEXT,
                 error TEXT,
-                provider_response_json JSONB,
+                provider_response_json TEXT,
                 usage_count INTEGER NOT NULL DEFAULT 1,
-                first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                last_used_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                first_seen_at TEXT DEFAULT (datetime('now')),
+                last_used_at TEXT DEFAULT (datetime('now')),
                 created_by TEXT,
-                manual_override_lat DOUBLE PRECISION,
-                manual_override_lng DOUBLE PRECISION,
+                manual_override_lat REAL,
+                manual_override_lng REAL,
                 manual_override_reason TEXT,
                 reviewed_by TEXT,
-                reviewed_at TIMESTAMPTZ,
-                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                reviewed_at TEXT,
+                created_at TEXT DEFAULT (datetime('now')),
+                updated_at TEXT DEFAULT (datetime('now'))
             )
         """)
-        cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_geocode_cache_address_hash_unique ON geocode_cache(address_hash)")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_geocode_cache_address_hash_unique ON geocode_cache(address_hash)")
+    USING_SQLITE = True
     return conn
 
 
@@ -93,6 +141,21 @@ def hash_address(normalized: str, code: str) -> str:
 
 
 def cache_lookup(conn, address_hash: str):
+    """Lookup a cached row by address_hash. Returns a dict or None.
+
+    Works for both psycopg and sqlite connections.
+    """
+    if USING_SQLITE:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM geocode_cache WHERE address_hash=?", (address_hash,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        cur.execute("UPDATE geocode_cache SET usage_count = COALESCE(usage_count,0) + 1, last_used_at = datetime('now'), updated_at = datetime('now') WHERE address_hash=?", (address_hash,))
+        cur.execute("SELECT * FROM geocode_cache WHERE address_hash=?", (address_hash,))
+        r = cur.fetchone()
+        return dict(r) if r else None
+
     with conn.cursor() as cur:
         cur.execute("SELECT * FROM geocode_cache WHERE address_hash=%s", (address_hash,))
         row = cur.fetchone()
@@ -110,6 +173,38 @@ def cache_lookup(conn, address_hash: str):
 
 
 def cache_save(conn, row: dict):
+    """Save a geocode row to the cache. Returns the saved row as a dict.
+
+    This handles Postgres (with JSONB) and SQLite (storing JSON as text).
+    """
+    if USING_SQLITE:
+        cur = conn.cursor()
+        provider_json = None
+        if row.get("provider_response_json") is not None:
+            provider_json = json.dumps(row.get("provider_response_json"))
+        cur.execute(
+            """
+            INSERT INTO geocode_cache (
+                address_hash, raw_address, normalized_address, country_name, country_code,
+                latitude, longitude, geocode_status, geocode_source, geocode_confidence,
+                display_name, error, provider_response_json, usage_count,
+                first_seen_at, last_used_at, created_by, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'), ?, datetime('now'), datetime('now'))
+            ON CONFLICT(address_hash) DO UPDATE SET
+                usage_count = usage_count + 1,
+                last_used_at = datetime('now'), updated_at = datetime('now')
+            """,
+            (
+                row.get("address_hash"), row.get("raw_address"), row.get("normalized_address"), row.get("country_name"), row.get("country_code"),
+                row.get("latitude"), row.get("longitude"), row.get("geocode_status"), row.get("geocode_source"), row.get("geocode_confidence"),
+                row.get("display_name"), row.get("error"), provider_json, row.get("created_by"),
+            ),
+        )
+        conn.commit()
+        cur.execute("SELECT * FROM geocode_cache WHERE address_hash=?", (row.get("address_hash"),))
+        r = cur.fetchone()
+        return dict(r) if r else None
+
     with conn.cursor() as cur:
         cur.execute("""
             INSERT INTO geocode_cache (
@@ -173,7 +268,7 @@ def main():
     cache_only = st.sidebar.checkbox("Cache-only mode")
 
     st.title("📍 Free Address Geocoder")
-    st.caption("Upload an Excel or CSV file, select address columns, preview, then geocode using the shared Neon cache.")
+    st.caption("Upload an Excel or CSV file, select address columns, preview, then geocode using the shared Neon cache or local fallback.")
 
     uploaded = st.file_uploader("Upload Excel or CSV", type=["xlsx", "xlsm", "xls", "csv"])
     if not uploaded:
@@ -211,17 +306,33 @@ def main():
                 result_status = "cache_hit"
                 stats["cache_hits"] += 1
             elif cache_only or stats["external"] >= int(max_external):
-                result = {"latitude": None, "longitude": None, "geocode_status": "cache_miss", "geocode_source": None, "geocode_confidence": None, "normalized_address": norm, "display_name": None, "error": "Not geocoded", "address_hash": ahash, "usage_count": None, "country_name": country}
+                result = {"latitude": None, "longitude": None, "geocode_status": "cache_miss", "geocode_source": None, "geocode_confidence": None, "normalized_address": norm, "display_name": None, "error": None}
                 result_status = "cache_miss"
                 stats["cache_misses"] += 1
             else:
                 lat, lon, gstatus, source, confidence, display_name, payload = nominatim(raw, code)
-                result = cache_save(conn, {"address_hash": ahash, "raw_address": raw, "normalized_address": norm, "country_name": country, "country_code": code, "latitude": lat, "longitude": lon, "geocode_status": gstatus, "geocode_source": source, "geocode_confidence": confidence, "display_name": display_name, "error": None if gstatus == "geocoded" else display_name, "provider_response_json": payload, "created_by": GEOCODER_ANALYST or None})
+                save_row = {
+                    "address_hash": ahash,
+                    "raw_address": raw,
+                    "normalized_address": norm,
+                    "country_name": country,
+                    "country_code": code,
+                    "latitude": lat,
+                    "longitude": lon,
+                    "geocode_status": gstatus,
+                    "geocode_source": source,
+                    "geocode_confidence": confidence,
+                    "display_name": display_name,
+                    "error": None if gstatus in ("geocoded", "not_found") else str(payload),
+                    "provider_response_json": payload,
+                    "created_by": GEOCODER_ANALYST or None,
+                }
+                result = cache_save(conn, save_row)
                 result_status = gstatus
                 stats["cache_misses"] += 1
                 stats["external"] += 1
                 time.sleep(float(delay))
-            out.append({"latitude": result.get("latitude"), "longitude": result.get("longitude"), "geocode_status": result_status, "geocode_source": result.get("geocode_source"), "geocode_confidence": result.get("geocode_confidence"), "normalized_address": result.get("normalized_address"), "geocode_display_name": result.get("display_name"), "geocode_error": result.get("error"), "country_context_used": result.get("country_name"), "geocode_address_hash": result.get("address_hash"), "geocode_usage_count": result.get("usage_count")})
+            out.append({"latitude": result.get("latitude"), "longitude": result.get("longitude"), "geocode_status": result_status, "geocode_source": result.get("geocode_source"), "geocode_confidence": result.get("geocode_confidence"), "display_name": result.get("display_name"), "normalized_address": result.get("normalized_address")})
             stats["processed"] += 1
             if result_status == "failed":
                 stats["errors"] += 1
