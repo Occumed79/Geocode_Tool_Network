@@ -9,4 +9,4 @@ description = "Flask app for cache-first address geocoding with Neon Postgres."
 requires-python = ">=3.11,<3.12"
 
 [project.scripts]
-streamlit = "render_streamlit_shim:main"
+streamlit = "render_start:main"
