@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" role="img" aria-label="Occu-Med logo">
+  <rect width="1000" height="620" fill="none"/>
+  <g fill="#fff">
+    <path d="M360 112a100 100 0 0 0 0 200h96V112h-96z"/>
+    <path d="M464 112h102a100 100 0 0 1 100 100v100H464V112z"/>
+    <path d="M674 112h100v200H674V212a100 100 0 0 1 100-100z"/>
+    <text x="500" y="465" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="84" font-weight="700" letter-spacing="16">OCCU-MED</text>
+  </g>
+</svg>
