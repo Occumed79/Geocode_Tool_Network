@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="820" height="420" viewBox="0 0 820 420" role="img" aria-label="Occu-Med">
-  <rect width="820" height="420" fill="none"/>
-  <g fill="#ffffff">
-    <path d="M300 88c-62 0-112 47-112 105s50 105 112 105h74V88h-74z"/>
-    <path d="M384 88h72c63 0 111 47 111 105v105H384V88z"/>
-    <path d="M578 88c-63 0-111 47-111 105v105h184V88h-73z"/>
-    <text x="410" y="382" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="78" font-weight="700" letter-spacing="8">OCCU-MED</text>
-  </g>
-</svg>
