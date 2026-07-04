@@ -3,7 +3,6 @@ from __future__ import annotations
 import base64
 import hashlib
 import io
-import json
 import os
 import re
 import time
@@ -382,7 +381,32 @@ def inject_css() -> None:
     st.markdown(
         """
         <style>
-        .stApp{background:radial-gradient(circle at 8% 5%,rgba(90,160,255,.28),transparent 30%),radial-gradient(circle at 90% 10%,rgba(115,235,255,.22),transparent 28%),linear-gradient(135deg,#020711,#071225 45%,#01040a);color:#f4fbff}.block-container{max-width:1220px;padding-top:1rem}.stApp:before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.026) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.026) 1px,transparent 1px);background-size:42px 42px;pointer-events:none}h1,h2,h3,p,span,div,label{color:inherit}.glass{background:linear-gradient(135deg,rgba(255,255,255,.105),rgba(255,255,255,.035));border:1px solid rgba(132,224,255,.28);box-shadow:0 24px 80px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.13);backdrop-filter:blur(24px);border-radius:30px;padding:26px;margin:16px 0}.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:28px;align-items:center;min-height:500px}.hero h1{font-size:clamp(2.8rem,6vw,5.8rem);line-height:.92;margin:20px 0 14px;letter-spacing:-.07em}.muted{color:rgba(232,246,255,.72);font-size:1.12rem}.logo{width:220px;max-width:80%;filter:drop-shadow(0 0 20px rgba(160,235,255,.35))}.logo-small{width:138px;filter:drop-shadow(0 0 14px rgba(160,235,255,.32))}.pill,.chip{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(118,234,255,.30);border-radius:999px;padding:8px 14px;background:rgba(118,234,255,.07);box-shadow:0 0 24px rgba(118,234,255,.10)}.topbar{display:flex;justify-content:space-between;align-items:center}.metric-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.metric{background:rgba(255,255,255,.055);border:1px solid rgba(118,234,255,.18);border-radius:22px;padding:18px}.metric b{font-size:1.55rem;color:#aef5ff}.globe{width:260px;height:260px;margin:auto;border-radius:50%;position:relative;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.95),rgba(118,234,255,.34) 23%,rgba(63,113,255,.12) 56%,rgba(255,255,255,.03));box-shadow:0 0 80px rgba(118,234,255,.35),inset 0 0 60px rgba(255,255,255,.12);animation:spin 9s linear infinite}.globe:before,.globe:after{content:"";position:absolute;inset:18px;border:1px solid rgba(174,245,255,.42);border-radius:50%;transform:rotate(58deg)}.globe:after{inset:46px;transform:rotate(-28deg);border-color:rgba(120,168,255,.45)}@keyframes spin{to{transform:rotate(360deg)}}.code{font-family:ui-monospace,Menlo,monospace;color:rgba(180,245,255,.62);font-size:.78rem;line-height:1.7}.stButton>button,.stDownloadButton>button{border-radius:999px!important;border:1px solid rgba(118,234,255,.48)!important;background:linear-gradient(135deg,rgba(120,168,255,.95),rgba(118,234,255,.86))!important;color:#03111f!important;font-weight:850!important;box-shadow:0 0 34px rgba(118,234,255,.26)!important}.stTextInput input,div[data-baseweb='select']>div,div[data-testid='stFileUploader'] section{background:rgba(255,255,255,.055)!important;border:1px solid rgba(118,234,255,.22)!important;border-radius:18px!important;color:#f4fbff!important}.stProgress > div > div > div > div{background:linear-gradient(90deg,#78a8ff,#76eaff)!important}@media(max-width:900px){.hero{grid-template-columns:1fr}.metric-row{grid-template-columns:1fr 1fr}.hero h1{font-size:3rem}}
+        [data-testid="stHeader"]{display:none!important}
+        [data-testid="stToolbar"]{display:none!important}
+        [data-testid="stDecoration"]{display:none!important}
+        #MainMenu{visibility:hidden!important}
+        footer{visibility:hidden!important}
+        .stApp{background:radial-gradient(circle at 8% 5%,rgba(90,160,255,.28),transparent 30%),radial-gradient(circle at 90% 10%,rgba(115,235,255,.22),transparent 28%),linear-gradient(135deg,#020711,#071225 45%,#01040a);color:#f4fbff}
+        .block-container{max-width:1180px;padding-top:0!important;padding-bottom:2rem!important}
+        .stApp:before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.026) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.026) 1px,transparent 1px);background-size:42px 42px;pointer-events:none}
+        h1,h2,h3,p,span,div,label{color:inherit}
+        .glass{background:linear-gradient(135deg,rgba(255,255,255,.105),rgba(255,255,255,.035));border:1px solid rgba(132,224,255,.28);box-shadow:0 24px 80px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.13);backdrop-filter:blur(24px);border-radius:30px;padding:26px;margin:16px 0}
+        .landing{height:100vh;max-height:100vh;overflow:hidden;display:grid;grid-template-rows:auto 1fr;gap:18px;padding:20px 0;box-sizing:border-box}
+        .topbar{height:72px;display:flex;justify-content:space-between;align-items:center;margin:0!important}
+        .landing-hero{height:calc(100vh - 126px);display:grid;grid-template-columns:1fr .95fr;gap:28px;align-items:center;margin:0!important;padding:34px}
+        .landing h1{font-size:clamp(3.2rem,7vw,6.4rem);line-height:.88;margin:20px 0 14px;letter-spacing:-.075em}
+        .muted{color:rgba(232,246,255,.72);font-size:1.08rem;line-height:1.65}
+        .logo{width:230px;max-width:80%;filter:drop-shadow(0 0 20px rgba(160,235,255,.35))}
+        .logo-small{width:130px;filter:drop-shadow(0 0 14px rgba(160,235,255,.32))}
+        .pill,.chip{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(118,234,255,.30);border-radius:999px;padding:8px 14px;background:rgba(118,234,255,.07);box-shadow:0 0 24px rgba(118,234,255,.10)}
+        .landing-actions{display:flex;gap:12px;align-items:center;margin-top:22px}
+        .workflow-shell{padding-top:18px}
+        .metric-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.metric{background:rgba(255,255,255,.055);border:1px solid rgba(118,234,255,.18);border-radius:22px;padding:18px}.metric b{font-size:1.55rem;color:#aef5ff}
+        .globe{width:min(34vw,300px);height:min(34vw,300px);margin:auto;border-radius:50%;position:relative;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.95),rgba(118,234,255,.34) 23%,rgba(63,113,255,.12) 56%,rgba(255,255,255,.03));box-shadow:0 0 80px rgba(118,234,255,.35),inset 0 0 60px rgba(255,255,255,.12);animation:spin 9s linear infinite}.globe:before,.globe:after{content:"";position:absolute;inset:18px;border:1px solid rgba(174,245,255,.42);border-radius:50%;transform:rotate(58deg)}.globe:after{inset:46px;transform:rotate(-28deg);border-color:rgba(120,168,255,.45)}@keyframes spin{to{transform:rotate(360deg)}}.code{font-family:ui-monospace,Menlo,monospace;color:rgba(180,245,255,.62);font-size:.78rem;line-height:1.7}
+        .stButton>button,.stDownloadButton>button{border-radius:999px!important;border:1px solid rgba(118,234,255,.48)!important;background:linear-gradient(135deg,rgba(120,168,255,.95),rgba(118,234,255,.86))!important;color:#03111f!important;font-weight:850!important;box-shadow:0 0 34px rgba(118,234,255,.26)!important;padding:.85rem 1.6rem!important}
+        .stTextInput input,div[data-baseweb='select']>div,div[data-testid='stFileUploader'] section{background:rgba(255,255,255,.055)!important;border:1px solid rgba(118,234,255,.22)!important;border-radius:18px!important;color:#f4fbff!important}
+        .stProgress > div > div > div > div{background:linear-gradient(90deg,#78a8ff,#76eaff)!important}
+        @media(max-width:900px){.landing{height:auto;max-height:none;overflow:visible}.landing-hero{height:auto;grid-template-columns:1fr}.metric-row{grid-template-columns:1fr 1fr}.landing h1{font-size:3rem}.globe{width:220px;height:220px}}
         </style>
         """,
         unsafe_allow_html=True,
@@ -395,53 +419,29 @@ def logo_img(src: str, css_class: str) -> str:
     return '<strong>OCCU-MED</strong>'
 
 
-def render_header(logo_src: str, selected_country: str) -> None:
-    st.markdown(
-        f"""
-        <div class="glass topbar">
-          <div>{logo_img(logo_src, 'logo-small')}</div>
-          <div class="pill">Selected country: <b>{selected_country}</b></div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_hero(logo_src: str) -> None:
-    st.markdown(
-        f"""
-        <div class="glass hero">
-          <div>
-            {logo_img(logo_src, 'logo')}
-            <div class="pill" style="margin-top:24px;">Shared Neon cache • Free fallback • Excel-ready</div>
-            <h1>Global Address Geocoder</h1>
-            <p class="muted">Upload address spreadsheets, choose a country context, and geocode locations through a shared organization-wide Neon memory so analysts do not geocode the same clinic twice.</p>
-          </div>
-          <div>
-            <div class="globe"></div>
-            <div class="glass code" style="padding:14px;">
-              &gt; normalize(address + country)<br>
-              &gt; check Neon geocode_cache<br>
-              &gt; cache hit: return coordinates instantly<br>
-              &gt; cache miss: call free Nominatim once<br>
-              &gt; save result for every analyst
-            </div>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_map(countries: list[dict[str, str]], selected: dict[str, str]) -> None:
+def render_map(countries: list[dict[str, str]], selected: dict[str, str], height: int = 300) -> None:
     if px is None:
         st.info("Plotly is required for the luminous global map.")
         return
     df = pd.DataFrame(countries)
     df["selected"] = df["alpha_3"].eq(selected["alpha_3"])
     df["intensity"] = df["selected"].map({True: 1.0, False: 0.08})
-    fig = px.choropleth(df, locations="alpha_3", color="intensity", hover_name="name", color_continuous_scale=[[0, "#07172d"], [1, "#76eaff"]], projection="natural earth")
-    fig.update_layout(margin=dict(l=0, r=0, t=0, b=0), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", coloraxis_showscale=False, height=360, geo=dict(bgcolor="rgba(0,0,0,0)", showframe=False, showcoastlines=True, coastlinecolor="rgba(160,235,255,.25)"))
+    fig = px.choropleth(
+        df,
+        locations="alpha_3",
+        color="intensity",
+        hover_name="name",
+        color_continuous_scale=[[0, "#07172d"], [1, "#76eaff"]],
+        projection="natural earth",
+    )
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=0, b=0),
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        coloraxis_showscale=False,
+        height=height,
+        geo=dict(bgcolor="rgba(0,0,0,0)", showframe=False, showcoastlines=True, coastlinecolor="rgba(160,235,255,.25)"),
+    )
     st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
 
@@ -452,6 +452,66 @@ def require_password() -> bool:
         st.markdown("### Access")
         entered = st.text_input("App password", type="password")
     return entered == APP_ACCESS_PASSWORD
+
+
+def render_landing(logo_src: str, countries: list[dict[str, str]]) -> None:
+    names = [country["name"] for country in countries]
+    selected = country_by_name(st.session_state.selected_country)
+
+    st.markdown('<div class="landing">', unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div class="glass topbar">
+          <div>{logo_img(logo_src, 'logo-small')}</div>
+          <div class="pill">Selected country: <b>{selected["name"]}</b></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="glass landing-hero">', unsafe_allow_html=True)
+    left, right = st.columns([1.05, 0.95], gap="large")
+    with left:
+        st.markdown(
+            f"""
+            {logo_img(logo_src, 'logo')}
+            <div class="pill" style="margin-top:24px;">Shared Neon cache • Free fallback • Excel-ready</div>
+            <h1>Global Address Geocoder</h1>
+            <p class="muted">Upload spreadsheets, choose a country context, and geocode addresses through a shared Neon memory so analysts do not geocode the same location twice.</p>
+            """,
+            unsafe_allow_html=True,
+        )
+        selected_name = st.selectbox("Country context", names, index=names.index(st.session_state.selected_country), key="landing_country")
+        st.session_state.selected_country = selected_name
+        if st.button("Start Geocoding", type="primary", use_container_width=False):
+            st.session_state.workflow_started = True
+            st.rerun()
+    with right:
+        st.markdown('<div class="globe"></div>', unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div class="glass code" style="padding:14px;margin-top:14px;">
+              &gt; normalize(address + country)<br>
+              &gt; check Neon geocode_cache<br>
+              &gt; cache hit: return coordinates instantly<br>
+              &gt; cache miss: call free Nominatim once
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
+
+def render_workflow_header(logo_src: str, selected_country: str) -> None:
+    st.markdown(
+        f"""
+        <div class="glass topbar">
+          <div>{logo_img(logo_src, 'logo-small')}</div>
+          <div class="pill">Selected country: <b>{selected_country}</b></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def geocode_dataframe(df: pd.DataFrame, address_cols: list[str], country_col: str | None, selected: dict[str, str], mode: str) -> tuple[pd.DataFrame, dict[str, int]]:
@@ -507,32 +567,44 @@ def geocode_dataframe(df: pd.DataFrame, address_cols: list[str], country_col: st
 
 
 def main() -> None:
-    st.set_page_config(page_title=APP_TITLE, page_icon="🧭", layout="wide")
+    st.set_page_config(page_title=APP_TITLE, page_icon="🧭", layout="wide", initial_sidebar_state="collapsed")
     inject_css()
     logo_src = image_to_data_uri(LOGO_PATH)
     countries = country_options()
     names = [country["name"] for country in countries]
     if "selected_country" not in st.session_state:
         st.session_state.selected_country = "United States" if "United States" in names else names[0]
-    selected = country_by_name(st.session_state.selected_country)
-    render_header(logo_src, selected["name"])
-    render_hero(logo_src)
+    if "workflow_started" not in st.session_state:
+        st.session_state.workflow_started = False
 
     if not require_password():
         st.error("Enter the app password to continue.")
         st.stop()
 
+    if not st.session_state.workflow_started:
+        render_landing(logo_src, countries)
+        st.stop()
+
+    selected = country_by_name(st.session_state.selected_country)
+
+    st.markdown('<div class="workflow-shell">', unsafe_allow_html=True)
+    render_workflow_header(logo_src, selected["name"])
+
+    if st.button("Back to landing"):
+        st.session_state.workflow_started = False
+        st.rerun()
+
     st.markdown('<div class="glass"><h2>1. Select country context</h2>', unsafe_allow_html=True)
-    selected_name = st.selectbox("Country", names, index=names.index(st.session_state.selected_country))
+    selected_name = st.selectbox("Country", names, index=names.index(st.session_state.selected_country), key="workflow_country")
     st.session_state.selected_country = selected_name
     selected = country_by_name(selected_name)
-    render_map(countries, selected)
-    st.markdown('</div>', unsafe_allow_html=True)
+    render_map(countries, selected, height=300)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="glass"><h2>2. Upload file and map columns</h2>', unsafe_allow_html=True)
     uploaded = st.file_uploader("Upload Excel or CSV", type=["csv", "xlsx", "xlsm", "xls"])
     if not uploaded:
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div></div>", unsafe_allow_html=True)
         st.stop()
     df = read_uploaded(uploaded)
     st.dataframe(df.head(25), use_container_width=True)
@@ -542,7 +614,7 @@ def main() -> None:
     country_choice = st.selectbox("Country column, if the file has one", ["None"] + columns)
     country_col = None if country_choice == "None" else country_choice
     country_mode = st.radio("Country handling", ["Use selected country for every row", "Use spreadsheet country when available, otherwise selected country", "Do not append country context"], index=1)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown('<div class="glass"><h2>3. Geocode with shared Neon memory</h2><div class="globe" style="width:160px;height:160px"></div>', unsafe_allow_html=True)
     if st.button("Start Geocoding", disabled=not address_cols):
@@ -553,7 +625,7 @@ def main() -> None:
             st.success("Geocoding complete.")
         except Exception as exc:
             st.error(f"Geocoding failed: {exc}")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     if "result_df" in st.session_state:
         result_df = st.session_state.result_df
@@ -561,7 +633,7 @@ def main() -> None:
         st.dataframe(result_df.head(100), use_container_width=True)
         st.download_button("Download Excel", data=to_xlsx_bytes(result_df), file_name="geocoded_addresses.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         st.download_button("Download CSV", data=result_df.to_csv(index=False).encode("utf-8"), file_name="geocoded_addresses.csv", mime="text/csv")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     if DATABASE_URL:
         try:
@@ -569,6 +641,8 @@ def main() -> None:
             st.markdown(f'<div class="glass"><h2>Shared Neon cache</h2><span class="chip">Total records: {stats["total"]}</span> <span class="chip">Geocoded: {stats["geocoded"]}</span> <span class="chip">Not found: {stats["not_found"]}</span> <span class="chip">Failed: {stats["failed"]}</span> <span class="chip">Total uses: {stats["uses"]}</span></div>', unsafe_allow_html=True)
         except Exception:
             pass
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
