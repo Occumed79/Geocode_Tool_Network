@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160">
+<rect width="640" height="160" fill="none"/>
+<circle cx="80" cy="80" r="54" fill="#071226" stroke="#7df9ff" stroke-width="6"/>
+<rect x="68" y="40" width="24" height="80" rx="5" fill="#7df9ff"/>
+<rect x="40" y="68" width="80" height="24" rx="5" fill="#7df9ff"/>
+<text x="155" y="95" fill="#f3f7fb" font-family="Arial" font-size="56" font-weight="900">OCCU-MED</text>
+</svg>
