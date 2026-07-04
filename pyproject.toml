@@ -2,4 +2,4 @@
 name = "occu-med-global-address-geocoder"
 version = "1.0.0"
 description = "Streamlit app for cache-first address geocoding with Neon Postgres."
-requires-python = ">=3.10"
+requires-python = ">=3.11,<3.12"
