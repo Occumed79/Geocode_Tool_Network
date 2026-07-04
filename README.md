@@ -4,45 +4,42 @@ A Render-ready Streamlit app for uploading Excel/CSV address lists, selecting a 
 
 ## What it does
 
-- Upload `.xlsx`, `.xlsm`, `.xls`, or `.csv`
+- Upload Excel or CSV address lists
 - Select columns that make up the address
 - Select a country context for better geocoding
-- Check shared Neon cache before any external lookup
+- Check the shared Neon cache before any external lookup
 - Use OpenStreetMap/Nominatim only on cache miss
-- Save results into a shared `geocode_cache` table
-- Download the completed Excel/CSV file
+- Download the completed Excel or CSV file
 - Show cache hits, cache misses, processed rows, and errors
+
+## Runtime
+
+Python is pinned to `3.11.5` for the current Streamlit dependency stack.
 
 ## Render settings
 
 Build command:
 
 ```bash
-pip install -r requirements.txt
+pip install --upgrade pip && pip install -r requirements.txt
 ```
 
 Start command:
 
 ```bash
-streamlit run main.py --server.address=0.0.0.0 --server.port=$PORT --server.headless=true
+python -m streamlit run main.py --server.address=0.0.0.0 --server.port=$PORT --server.headless=true
 ```
 
-## Required environment variables
+Required Render environment variables:
 
-```text
-DATABASE_URL=your Neon pooled connection string
-GEOCODER_USER_AGENT=OccuMedAddressGeocoder/1.0 your-email@example.com
-NOMINATIM_BASE_URL=https://nominatim.openstreetmap.org/search
-APP_ACCESS_PASSWORD=your-password
-```
+- `DATABASE_URL`
+- `GEOCODER_USER_AGENT`
+- `NOMINATIM_BASE_URL`
 
-Optional:
+Optional Render environment variable:
 
-```text
-GEOCODER_ANALYST=analyst name or email
-NOMINATIM_DELAY_SECONDS=1.1
-```
+- `NOMINATIM_DELAY_SECONDS`
 
 ## Shared Neon cache
 
-The app automatically creates or upgrades the `geocode_cache` table on startup. Every analyst uses the same Neon cache, so if one analyst geocodes a clinic once, the next analyst gets an instant cache hit for the same normalized address and country context.
+The app creates the `geocode_cache` table on startup if it does not already exist. Every analyst uses the same Neon cache, so repeat normalized addresses and country contexts return faster cache hits.
