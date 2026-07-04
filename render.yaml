@@ -6,6 +6,8 @@ services:
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: python -m streamlit run main.py --server.address=0.0.0.0 --server.port=$PORT --server.headless=true
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.5
       - key: DATABASE_URL
         sync: false
       - key: GEOCODER_USER_AGENT
