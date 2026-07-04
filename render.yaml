@@ -8,11 +8,7 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.5
-      - key: DATABASE_URL
-        sync: false
       - key: GEOCODER_USER_AGENT
         value: OccuMedAddressGeocoder/1.0
       - key: NOMINATIM_BASE_URL
         value: https://nominatim.openstreetmap.org/search
-      - key: APP_ACCESS_PASSWORD
-        sync: false
