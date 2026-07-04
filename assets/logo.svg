@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="360" viewBox="0 0 1024 360" role="img" aria-label="Occu-Med">
-  <rect width="1024" height="360" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="420" viewBox="0 0 820 420" role="img" aria-label="Occu-Med">
+  <rect width="820" height="420" fill="none"/>
   <g fill="#ffffff">
-    <path d="M358 77h96v108h-96c-64 0-116-48-116-108S294-31 358-31h96V77h-96z" transform="translate(98 42)"/>
-    <path d="M0 108C0 48 52 0 116 0h96v216H0V108z" transform="translate(514 42)"/>
-    <path d="M0 108C0 48 52 0 116 0h96v216H0V108z" transform="translate(672 42) scale(-1 1)"/>
+    <path d="M300 88c-62 0-112 47-112 105s50 105 112 105h74V88h-74z"/>
+    <path d="M384 88h72c63 0 111 47 111 105v105H384V88z"/>
+    <path d="M578 88c-63 0-111 47-111 105v105h184V88h-73z"/>
+    <text x="410" y="382" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="78" font-weight="700" letter-spacing="8">OCCU-MED</text>
   </g>
-  <text x="512" y="300" text-anchor="middle" fill="#ffffff" font-family="Georgia, 'Times New Roman', serif" font-size="82" font-weight="700" letter-spacing="9">OCCU-MED</text>
 </svg>
