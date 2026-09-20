@@ -7,6 +7,8 @@ RESULTS_FILE = "fcdo_geocode_results.json"
 _state = {"status":"idle","processed":0,"total":0,"matched":0,"city_fallback":0,"unmatched":0,"errors":0}
 _lock = threading.Lock()
 _thread = None
+_query_cache = {}
+_query_cache_lock = threading.Lock()
 
 class _Limiter:
     def __init__(self, n=5, period=1.05):
@@ -29,6 +31,9 @@ def _join(parts):
     return ", ".join(str(x).strip() for x in parts if x is not None and str(x).strip())
 
 def _lookup(q, key):
+    with _query_cache_lock:
+        if q in _query_cache:
+            return _query_cache[q]
     params=urllib.parse.urlencode({"q":q,"api_key":key,"limit":"1","addressdetails":"0","extratags":"0","namedetails":"0"})
     url="https://geocode.maps.co/search?"+params
     last=None
@@ -38,9 +43,10 @@ def _lookup(q, key):
             req=urllib.request.Request(url,headers={"User-Agent":"OccuMed-FCDO-Geocoder/1.0"})
             with urllib.request.urlopen(req,timeout=30) as r:
                 data=json.loads(r.read().decode("utf-8"))
-            if data:
-                return float(data[0]["lat"]),float(data[0]["lon"])
-            return None
+            result=(float(data[0]["lat"]),float(data[0]["lon"])) if data else None
+            with _query_cache_lock:
+                _query_cache[q]=result
+            return result
         except Exception as e:
             last=e
             time.sleep(0.8*(attempt+1))
