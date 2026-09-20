@@ -54,13 +54,26 @@ def _lookup(q, key):
 
 def _one(it,key):
     ident,name,addr,city,region,country=it
-    tries=[_join([addr,city,region,country]),_join([name,city,region,country]),_join([city,region,country])]
+    addr_text=str(addr or "").strip()
+    city_q=_join([city,region,country])
+    address_q=_join([addr,city,region,country])
+    name_q=_join([name,city,region,country])
+    low=addr_text.lower()
+    placeholder=(not addr_text) or ("multiple" in low) or ("see provider" in low) or ("see website" in low)
+    tries=[address_q]
+    if placeholder:
+        tries.append(name_q)
+    tries.append(city_q)
     seen=set(); tries=[q for q in tries if q and not (q in seen or seen.add(q))]
     had_error=False
     for idx,q in enumerate(tries):
         try: got=_lookup(q,key)
         except Exception: had_error=True; continue
-        if got: return [ident,got[0],got[1],idx]
+        if got:
+            if q==city_q: mt=2
+            elif q==name_q and placeholder: mt=1
+            else: mt=0
+            return [ident,got[0],got[1],mt]
     return [ident,None,None,-2 if had_error else -1]
 
 def _run():
