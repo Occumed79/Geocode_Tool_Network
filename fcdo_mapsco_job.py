@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import psycopg
 
-INPUT_FILES = ["fcdo_geocode_input.jsonl", "fcdo_geocode_input_2.jsonl"]
+INPUT_FILES = ["fcdo_geocode_input.jsonl", "fcdo_geocode_input_2.jsonl", "fcdo_geocode_input_3_missing192.jsonl"]
 JOB_KEY = "fcdo_fcdoproviders_20260920"
 RESULTS_FILE = "fcdo_geocode_results.json"
 
