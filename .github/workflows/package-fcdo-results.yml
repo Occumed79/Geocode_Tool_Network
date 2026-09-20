@@ -1,0 +1,15 @@
+name: Package FCDO results
+on:
+  push:
+    branches:
+      - temp-fcdo-mapsco-geocode-20260920
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fcdo-geocode-results
+          path: fcdo_geocode_results_snapshot.json
+          retention-days: 1
