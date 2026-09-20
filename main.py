@@ -145,6 +145,27 @@ def api_geocode():
     return Response(stream(), mimetype="application/x-ndjson")
 
 
+@app.get("/api/fcdo-mapsco/start")
+def api_fcdo_mapsco_start():
+    from fcdo_mapsco_job import start_job
+    return jsonify(start_job())
+
+
+@app.get("/api/fcdo-mapsco/status")
+def api_fcdo_mapsco_status():
+    from fcdo_mapsco_job import status
+    return jsonify(status())
+
+
+@app.get("/api/fcdo-mapsco/results")
+def api_fcdo_mapsco_results():
+    from fcdo_mapsco_job import results
+    data = results()
+    if data is None:
+        return jsonify({"error": "not ready"}), 202
+    return jsonify(data)
+
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "8080"))
     app.run(host="0.0.0.0", port=port)
