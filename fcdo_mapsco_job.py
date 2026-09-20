@@ -87,7 +87,7 @@ def _run():
         with _lock:
             _state.clear(); _state.update(status="running",processed=0,total=len(items),matched=0,city_fallback=0,unmatched=0,errors=0,started=time.time())
         out=[]
-        with ThreadPoolExecutor(max_workers=8) as ex:
+        with ThreadPoolExecutor(max_workers=24) as ex:
             futs={ex.submit(_one,it,key):it[0] for it in items}
             for fut in as_completed(futs):
                 ident=futs[fut]
